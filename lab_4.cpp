@@ -49,7 +49,9 @@ public:
 	matrix(int rows, int cols) {
 		n = rows;
 		m = cols;
-		p = new 
+		p = new numeric*[n];
+		for (int i = 0; i < n; i++ )
+			p[i] = new numeric[]
 	}
 
 	~matrix()
