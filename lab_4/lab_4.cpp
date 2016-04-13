@@ -33,22 +33,26 @@ public:
 		temp.number = number * op2.number;
 		return temp;
 	}
+
+	void show() {
+		cout << number;
+	}
 };
 
 class matrix {
-	numeric ** p;
-	int n,m;
+	numeric **p;
+	int rows, cols;
 public:
 	matrix() {
-		n = 1;
-		m = 1;
-		p = new numeric*[n];
-		p[0] = new numeric[m];
+		rows = 1;
+		cols = 1;
+		p = new numeric*[rows];
+		p[0] = new numeric[cols];
 	}
 
-	matrix(int rows, int cols, int i) {
-		n = rows;
-		m = cols;
+	matrix(int n, int m, int i) {
+		rows = n;
+		cols = m;
 		p = new numeric*[n];
 		for (int i = 0; i < n; i++)
 			p[i] = new numeric[m];
@@ -62,9 +66,9 @@ public:
 		}
 	}
 	
-	matrix(int rows, int cols) {
-		n = rows;
-		m = cols;
+	matrix(int n, int m) {
+		rows = n;
+		cols = m;
 		p = new numeric*[n];
 		for (int i = 0; i < n; i++)
 			p[i] = new numeric[m];
@@ -72,37 +76,67 @@ public:
 
 	~matrix()
 	{
-		//cout << "vector dtor" << endl;
+		{
+			for (int z = 0; z < rows; ++z)
+				delete[] p[z];
+			delete[] p;
+		}
 	}
 
-	/*matrix& operator *(matrix& sch)
+	matrix operator *(matrix& sch)
 	{
-		matrix temp; numeric comp;
-		for (int i = 0; i < n - 1; i++)
-		{
-			for (int j = 0; j < sch.n - 1; j++) {
-				comp = p[i] * sch.p[j];
-			    temp.p[i] = temp.p[i] + comp;
+		matrix temp(cols, rows);
+		for (int i = 0; i < cols; i++)
+			for (int j = 0; j < cols; j++) {
+				temp.p[i][j].number = 0;
+				for (int k = 0; k < rows; k++)
+				{
+					numeric dop = p[i][k] * sch.p[k][j];
+					temp.p[i][j] = temp.p[i][j] + dop;
+				}
 			}
-		}
 		return temp;
-	}*/
+	}
 
-	matrix& operator +(matrix& sch) {
-		matrix matr(n, m);
-		for (int i = 0; i < n; i++) {
-			for (int j = 0; j < m; j++) {
-				matr.p[i][j].number =  sch.p[i][j].number + p[i][j].number;
+	matrix operator *(const int& num) const
+	{
+		matrix temp(cols, rows);
+		for (int i = 0; i < cols; i++)
+			for (int j = 0; j < cols; j++) {
+				temp.p[i][j].number = p[i][j].number * num;
+			}
+		return temp;
+	}
+
+	matrix operator +(const matrix& sch) const {
+		matrix matr(rows, cols);
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				matr.p[i][j] =  sch.p[i][j] + p[i][j];//matr(i,j) =  sch.p[i][j] + p[i][j];
 			}
 		}
 		return matr;
 	}
+
+	numeric operator() (unsigned int i,unsigned int j){
+		return p[i][j];
+	}
+
+
+	matrix& transp(matrix& matr) {
+		matrix matr1(cols, rows);
+		for (int i = 0; i < rows; i++)
+			for (int j = 0; j < cols; j++)
+				matr1.p[i][j].number = matr.p[j][i].number;
+		return matr1;
+	}
+
 	void show();
 };
 
 void matrix::show() {
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++)
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols; j++)
 			cout << p[i][j].number << " ";
 		cout << "\n" << endl;
 	}
@@ -111,26 +145,41 @@ void matrix::show() {
 
 int _tmain()
 {
-	int i = 0;
+	int i = 0; int j = 0;
 	int num, lim = 0;
-	int N; //строки, столбцы
+	int N, M; //строки, столбцы
 	
-    cout << "n*n : N = ";
+    cout << "n*m : ROWS = ";
 	cin >> N;
-	matrix m1(N, N, i);
-	cout << "your first matrix" << endl;
+	cout << "      COLS = ";
+	cin >> M;
+	matrix m1(N, M, i);
+	cout << "Your FIRST matrix" << endl;
 	m1.show();
-	cout << "Next matrix"<<endl;
-	matrix m2(N, N, i);
-	cout<< "your second matrix" << endl;
+
+	cout << "\nNext matrix"<<endl;
+	matrix m2(N, M, i);
+	cout<< "\nYour SECOND matrix" << endl;
 	m2.show();
+	
+	matrix mt(M, N);
+	cout << "\nYour SECOND trans matrix" << endl;
+	mt=m2.transp(m2);
+	mt.show();
+	
 	matrix m3(N, N);
-	m3 = m1 + m2;
-	cout << "your third matrix" << endl;
+	m3 = m1 * mt;
+	cout << "\nMatrix MULTIPLICATION" << endl;
 	m3.show();
 
-	
-		
+	matrix m4(N, N);
+	cout << "\nMatrix MULTIPLICATION * NUMBER" << endl;
+	cout << "NUMBER = ";
+	cin >> i;
+	m4 = m3 * i;
+	m4.show();
+
+	m4.p[i][j].show();
 
 	system("pause");
 	return 0;
