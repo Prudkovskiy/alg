@@ -148,8 +148,7 @@ void Xhandler(matrix& matr, int n, int m, int limit) {
 					throw runtime_error("Bad index");
 			}
 			catch (runtime_error& e) {
-				cout << "\nBAD INDEX:" << endl;
-				cout << i << " " << j << endl;
+				cout << "\nBAD INDEX:" << i << " " << j << endl;
 			}
 		}
 	}
@@ -174,13 +173,13 @@ int _tmain()
 	matrix m2(N, M, i);
 	cout<< "\nYour SECOND matrix" << endl;
 	m2.show(N, M);
-	Xhandler(m1, N, M, lim);
+	Xhandler(m2, N, M, lim);
 	
 	matrix mt(M, N);
 	cout << "\nYour SECOND trans matrix" << endl;
 	mt=m2.transp(m2);
 	mt.show(M, N);
-	Xhandler(m2, N, M, lim);
+	Xhandler(mt, M, N, lim);
 	
 	matrix m3(N, N);
 	m3 = m1 * mt;
