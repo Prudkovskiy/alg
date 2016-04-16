@@ -9,25 +9,23 @@ using namespace std;
 
 class numeric {
 public:
-	int number, limit;
+	int number;
 	numeric() {
 		number = 0;
-		limit = 0;
 	}
 	~numeric() {}
-	numeric(int k, int l) {
+	numeric(int k) {
 		number = k;
-		limit = l;
 		//cout << "Creating numeric" << endl;
 	}
-	numeric& operator+(numeric& op2)
+	numeric operator+(const numeric& op2) const
 	{
 		numeric temp;
 		temp.number = number + op2.number;
 		return temp;
 	}
 
-	numeric& operator*(numeric& op2)
+	numeric operator*(const numeric& op2) const
 	{
 		numeric temp;
 		temp.number = number * op2.number;
@@ -76,77 +74,91 @@ public:
 
 	~matrix()
 	{
-		{
+		/*{
 			for (int z = 0; z < rows; ++z)
 				delete[] p[z];
 			delete[] p;
-		}
+		}*/
 	}
 
-	matrix operator *(matrix& sch)
+	matrix operator *(matrix& sch) const
 	{
-		matrix temp(cols, rows);
-		for (int i = 0; i < cols; i++)
-			for (int j = 0; j < cols; j++) {
+		matrix temp(rows, rows);
+		for (int i = 0; i < rows; i++)
+			for (int j = 0; j < rows; j++) {
 				temp.p[i][j].number = 0;
 				for (int k = 0; k < rows; k++)
 				{
-					numeric dop = p[i][k] * sch.p[k][j];
-					temp.p[i][j] = temp.p[i][j] + dop;
+					numeric dop = p[i][k] * sch(k, j);
+					temp(i, j) = temp(i, j) + dop;
 				}
 			}
 		return temp;
 	}
 
-	matrix operator *(const int& num) const
+	matrix operator *(const int num) const
 	{
 		matrix temp(cols, rows);
 		for (int i = 0; i < cols; i++)
 			for (int j = 0; j < cols; j++) {
-				temp.p[i][j].number = p[i][j].number * num;
+				temp(i, j) = p[i][j].number * num;
 			}
 		return temp;
 	}
 
-	matrix operator +(const matrix& sch) const {
+	matrix operator +(matrix& sch) const {
 		matrix matr(rows, cols);
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
-				matr.p[i][j] =  sch.p[i][j] + p[i][j];//matr(i,j) =  sch.p[i][j] + p[i][j];
+				matr(i, j) = sch(i, j) + p[i][j];
 			}
 		}
 		return matr;
 	}
 
-	numeric operator() (unsigned int i,unsigned int j){
+	numeric& operator() (unsigned int i,unsigned int j){
 		return p[i][j];
 	}
 
 
-	matrix& transp(matrix& matr) {
+	matrix transp(matrix& matr) {
 		matrix matr1(cols, rows);
-		for (int i = 0; i < rows; i++)
-			for (int j = 0; j < cols; j++)
+		for (int i = 0; i < cols; i++)
+			for (int j = 0; j < rows; j++)
 				matr1.p[i][j].number = matr.p[j][i].number;
 		return matr1;
 	}
 
-	void show();
+	void show(int, int);
 };
 
-void matrix::show() {
-	for (int i = 0; i < rows; i++) {
-		for (int j = 0; j < cols; j++)
+void matrix::show(int n,int m) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++)
 			cout << p[i][j].number << " ";
 		cout << "\n" << endl;
 	}
 }
 
+void Xhandler(matrix& matr, int n, int m, int limit) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+			try {
+				if (matr(i, j).number > limit)
+					throw runtime_error("Bad index");
+			}
+			catch (runtime_error& e) {
+				cout << "\nBAD INDEX:" << endl;
+				cout << i << " " << j << endl;
+			}
+		}
+	}
+}
 
 int _tmain()
 {
 	int i = 0; int j = 0;
-	int num, lim = 0;
+	int num, lim = 10;
 	int N, M; //строки, столбцы
 	
     cout << "n*m : ROWS = ";
@@ -155,31 +167,34 @@ int _tmain()
 	cin >> M;
 	matrix m1(N, M, i);
 	cout << "Your FIRST matrix" << endl;
-	m1.show();
+	m1.show(N, M);
+	Xhandler(m1, N, M, lim);
 
 	cout << "\nNext matrix"<<endl;
 	matrix m2(N, M, i);
 	cout<< "\nYour SECOND matrix" << endl;
-	m2.show();
+	m2.show(N, M);
+	Xhandler(m1, N, M, lim);
 	
 	matrix mt(M, N);
 	cout << "\nYour SECOND trans matrix" << endl;
 	mt=m2.transp(m2);
-	mt.show();
+	mt.show(M, N);
+	Xhandler(m2, N, M, lim);
 	
 	matrix m3(N, N);
 	m3 = m1 * mt;
 	cout << "\nMatrix MULTIPLICATION" << endl;
-	m3.show();
+	m3.show(N, N);
+	Xhandler(m3, N, N, lim);
 
 	matrix m4(N, N);
 	cout << "\nMatrix MULTIPLICATION * NUMBER" << endl;
 	cout << "NUMBER = ";
 	cin >> i;
 	m4 = m3 * i;
-	m4.show();
-
-	m4.p[i][j].show();
+	m4.show(N, N);
+	Xhandler(m4, N, N, lim);
 
 	system("pause");
 	return 0;
