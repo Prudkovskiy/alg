@@ -10,6 +10,8 @@ public:
 	parent();
 	parent(string);
 	~parent();
+	int getint() { return -1; }
+	void del() { (*this).~parent(); }
 };
 
 parent::parent() { name = "default"; }

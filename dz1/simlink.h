@@ -1,8 +1,3 @@
-#include "stdafx.h"
-#include "string.h"
-#include "iostream"
-#include "vector"
-
 #include "parent.h"
 
 using namespace std;
@@ -14,7 +9,10 @@ public:
 	~simlink();
 	void rename(string);
 	string getname();
+	int getint() { return 2; }
+	void del() { (*this).~simlink(); }
 };
+
 simlink::simlink() { name = "default"; }
 simlink::simlink(string fname) { name = fname; }
 simlink::~simlink() { cout << "dctor"; }

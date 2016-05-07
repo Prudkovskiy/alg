@@ -1,7 +1,3 @@
-#include "stdafx.h"
-#include "string.h"
-#include "iostream"
-
 #include "parent.h"
 
 using namespace std; 
@@ -16,6 +12,8 @@ public:
 	string getname();
 	void redact(string);
 	string getdata();
+	int getint() { return 1; }
+	void del() { (*this).~file(); }
 };
 
 file::file() { name = "default"; data = "default"; }
