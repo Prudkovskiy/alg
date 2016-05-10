@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "string.h"
-#include "iostream"
+#include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -9,7 +9,7 @@ public:
 	string name;
 	parent();
 	parent(string);
-	~parent();
+	virtual ~parent();
 	int getint() { return -1; }
 	void del() { (*this).~parent(); }
 };
