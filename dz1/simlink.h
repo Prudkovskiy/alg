@@ -1,11 +1,13 @@
+#pragma once
+
 #include "parent.h"
 
 using namespace std;
 
 class simlink : public parent {
 public:
-	simlink();
-	simlink(string);
+	parent* link;
+	simlink(string, parent*, string);
 	~simlink();
 	void rename(string);
 	string getname();
@@ -13,8 +15,7 @@ public:
 	void del() { (*this).~simlink(); }
 };
 
-simlink::simlink() { name = "default"; }
-simlink::simlink(string fname) { name = fname; }
-simlink::~simlink() { cout << "dctor"; }
+simlink::simlink(string user, parent* plink, string fname = "default"): parent(user, fname) { link = plink; }
+simlink::~simlink() { cout << "dctor simlink"; }
 void simlink::rename(string fname) { name = fname; }
 string simlink::getname() { return name; }

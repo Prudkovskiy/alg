@@ -1,9 +1,12 @@
+п»ї#pragma once
+
 #include <vector>
 
 #include "file.h"
 #include "simlink.h"
 
 using namespace std;
+
 
 class directory : public parent {
 	vector <string> inf;
@@ -12,32 +15,29 @@ public:
 	vector <directory*> dir;
 	vector <simlink*> sim;
 
-	directory();
-	directory(string);
+	directory(string, string);
 	~directory();
 	string getname() { return name; };
 	void del() { (*this).~directory(); }
-	void add();
+	void add(string user);
 	void show();
 	void deletedir(string);
-	file findfile(string);
-	directory copy();
+	file* findfile(string);
+	directory copy(string user);
 };
 
-directory::directory() { name = "default"; }
+directory::directory(string user, string fname = "default") : parent(user, fname) {}
 
-directory::directory(string dname) { name = dname; }
+directory::~directory() { fil.clear(); dir.clear(); sim.clear(); cout << "dctor directory"; }
 
-directory::~directory() { fil.clear(); dir.clear(); sim.clear(); }
-
-void directory::add() {
-	char command[3];
+void directory::add(string user) {
+	char command[10];
 	string name;
 	string dat;
 
-	cout << "добавить файл - fil" << endl;
-	cout << "добавить символическую ссылку - sim" << endl;
-	cout << "добавить папку - dir" << endl;
+	cout << "РґРѕР±Р°РІРёС‚СЊ С„Р°Р№Р» - fil" << endl;
+	cout << "РґРѕР±Р°РІРёС‚СЊ СЃРёРјРІРѕР»РёС‡РµСЃРєСѓСЋ СЃСЃС‹Р»РєСѓ - sim" << endl;
+	cout << "РґРѕР±Р°РІРёС‚СЊ РїР°РїРєСѓ - dir" << endl;
 
 	scanf("%s", &command);
 	switch (command[0]) {
@@ -47,8 +47,8 @@ void directory::add() {
 		cin >> name;
 		cout << "text: ";
 		cin >> dat;
-		file f(name, dat);
-		fil.push_back(&f);
+		file* f = new file(user, name, dat);
+		fil.push_back(f);
 	}
 	break;
 
@@ -56,8 +56,12 @@ void directory::add() {
 	{
 		cout << "name of simlink: ";
 		cin >> name;
-		simlink s(name);
-		sim.push_back(&s);
+		cout << "РІРІРµРґРёС‚Рµ РёРјСЏ С„Р°Р№Р»Р° РЅР° РєРѕС‚РѕСЂС‹Р№ С…РѕС‚РёС‚Рµ СѓРєР°Р·С‹РІР°С‚СЊ" << endl;
+		string fname;
+		cin >> fname;
+		file* f = findfile(fname);
+		simlink* s = new simlink(user, f, name);
+		sim.push_back(s);
 	}
 	break;
 
@@ -65,15 +69,15 @@ void directory::add() {
 	{
 		cout << "name of directory: ";
 		cin >> name;
-		directory d(name);
-		dir.push_back(&d);
-	}	
+		directory* d = new directory(user, name);
+		dir.push_back(d);
+	}
 	break;
 
 	default:
 		break;
 	}
- }
+}
 
 void directory::show() {
 	cout << "files: " << endl;
@@ -88,8 +92,11 @@ void directory::show() {
 	if (sim.size() == 0)
 		cout << "empty" << endl;
 	else
-		for (int i = 0; i < sim.size(); i++) 
+		for (int i = 0; i < sim.size(); i++) {
 			cout << sim[i]->getname() << endl;
+			cout << "С„Р°Р№Р», РЅР° РєРѕС‚РѕСЂС‹Р№ СѓРєР°Р·С‹РІР°РµС‚ СЃСЃС‹Р»РєР°" << endl;
+			cout << sim[i]->link->name << endl;
+		}
 
 	cout << "directories: " << endl;
 	if (dir.size() == 0)
@@ -100,9 +107,9 @@ void directory::show() {
 		}
 }
 
-void directory::deletedir(string name) { //удаление папки вместе с содержимым
+void directory::deletedir(string name) { //СѓРґР°Р»РµРЅРёРµ РґРёСЂРµРєС‚РѕСЂРёРё 
 
-	for (int i = 0; i < fil.size(); i++) 
+	for (int i = 0; i < fil.size(); i++)
 		fil[i]->del();
 
 	for (int i = 0; i < sim.size(); i++)
@@ -115,22 +122,19 @@ void directory::deletedir(string name) { //удаление папки вместе с содержимым
 			deletedir(dir[i]->getname());
 }
 
-file directory::findfile(string name) {  //поиск файлов в папке рекурсией
-	int k;
-	for (int j = 0; j < dir.size(); j++) {
+file* directory::findfile(string name) {  //РїРѕРёСЃРє С„Р°Р№Р»Р° РІ РїР°РїРєРµ СЂРµРєСѓСЂСЃРёРµР№
 		for (int i = 0; i < fil.size(); i++)
 			if (fil[i]->name == name) {
-				return *fil[i];
-				k = 1;
+				return fil[i];
 			}
-		if (k != 1) {
-			dir[j]->findfile(name);
-		}
-	}
+		for (int i = 0; i < dir.size(); i++)
+			if (dir[i]->findfile(name))
+				return dir[i]->findfile(name);
+		return 0;
 }
 
-directory directory::copy() { //копия дерикторий 
-	directory d;
+directory directory::copy(string user) { //РєРѕРїРёСЏ РґРёСЂРµРєС‚РѕСЂРёР№
+	directory d(user);
 	for (int i = 0; i < dir.size(); i++) {
 		d.dir[i] = dir[i];
 	}
@@ -140,4 +144,5 @@ directory directory::copy() { //копия дерикторий
 	for (int i = 0; i < fil.size(); i++) {
 		d.fil[i] = fil[i];
 	}
+	return d;
 }

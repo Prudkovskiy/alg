@@ -1,19 +1,28 @@
-#include "stdafx.h"
+#pragma once
+
 #include <string>
 #include <iostream>
+#include "user.h"
+#include <map>
 
 using namespace std;
 
 class parent {
 public:
+	map <string, Prava> users;
 	string name;
-	parent();
-	parent(string);
+	parent(string ,string);
 	virtual ~parent();
-	int getint() { return -1; }
 	void del() { (*this).~parent(); }
+	void dostup();
 };
 
-parent::parent() { name = "default"; }
-parent::parent(string fname) { name = fname; }
+parent::parent(string username, string fname = "default") { 
+	name = fname; 
+	users[username] = { true, true };
+	users["admin"] = { true, true };
+}
 parent::~parent() { cout << "dctor"; }
+void parent::dostup() {
+
+}

@@ -1,18 +1,21 @@
 #include "directory.h"
-#include "stdafx.h"
-
+#include "user.h"
+#include <map>
 int main()
 {
-	//setlocale(LC_ALL, "Russian");
+	setlocale(LC_ALL, "Russian");
 
-	directory d;
-	file f;
-	simlink s;
+	string user="Иван";
+	directory d(user);
+	file f(user);
+	simlink s(user, &f);
 
+	d.add(user);
+	d.add(user);
 	d.show();
-	d.add();
-	
 
-    return 0;
+	//directory k = d.copy(user);
+	//k.show();
+	system("PAUSE");
+	return 0;
 }
-
