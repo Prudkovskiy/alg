@@ -23,4 +23,3 @@ void file::rename(string fname) { name = fname; }
 string file::getname() { return name; }
 void file::redact(string fdata) { data = fdata; }
 string file::getdata() { return data; }
-

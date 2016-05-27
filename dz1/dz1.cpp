@@ -1,16 +1,17 @@
-// dz1.cpp: определяет точку входа для консольного приложения.
-//
-
 #include "directory.h"
 #include "stdafx.h"
 
 int main()
 {
-	directory a1;
-	file a2;
-	simlink a3;
+	//setlocale(LC_ALL, "Russian");
 
-	a1.add(a2);
+	directory d;
+	file f;
+	simlink s;
+
+	d.show();
+	d.add();
+	
 
     return 0;
 }

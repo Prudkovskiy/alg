@@ -8,15 +8,18 @@ using namespace std;
 class directory : public parent {
 	vector <string> inf;
 public:
-	vector <parent*> mas;
+	vector <file*> fil;
+	vector <directory*> dir;
+	vector <simlink*> sim;
+
 	directory();
 	directory(string);
 	~directory();
+	string getname() { return name; };
 	void del() { (*this).~directory(); }
-	void add(parent&);
+	void add();
 	void show();
 	void deletedir(string);
-	int getint() { return 3; }
 	file findfile(string);
 	directory copy();
 };
@@ -25,57 +28,116 @@ directory::directory() { name = "default"; }
 
 directory::directory(string dname) { name = dname; }
 
-directory::~directory() { mas.clear(); }
+directory::~directory() { fil.clear(); dir.clear(); sim.clear(); }
 
-void directory::add(parent &child) { mas.push_back(&child); }
+void directory::add() {
+	char command[3];
+	string name;
+	string dat;
+
+	cout << "добавить файл - fil" << endl;
+	cout << "добавить символическую ссылку - sim" << endl;
+	cout << "добавить папку - dir" << endl;
+
+	scanf("%s", &command);
+	switch (command[0]) {
+	case 'f':
+	{
+		cout << "name of file: ";
+		cin >> name;
+		cout << "text: ";
+		cin >> dat;
+		file f(name, dat);
+		fil.push_back(&f);
+	}
+	break;
+
+	case 's':
+	{
+		cout << "name of simlink: ";
+		cin >> name;
+		simlink s(name);
+		sim.push_back(&s);
+	}
+	break;
+
+	case 'd':
+	{
+		cout << "name of directory: ";
+		cin >> name;
+		directory d(name);
+		dir.push_back(&d);
+	}	
+	break;
+
+	default:
+		break;
+	}
+ }
 
 void directory::show() {
-	for (int i = 0; i < mas.size(); i++) {
-		if (mas[i]->getint() == 1)
-			cout << mas[i]->name << "  " << "file" << endl;
-		if (mas[i]->getint() == 2)
-			cout << mas[i]->name << "  " << "simlink" << endl;
-		if (mas[i]->getint() == 3)
-			cout << mas[i]->name << "  " << "directory" << endl;
-	}
+	cout << "files: " << endl;
+	if (fil.size() == 0)
+		cout << "empty" << endl;
+	else
+		for (int i = 0; i < fil.size(); i++) {
+			cout << fil[i]->getname() << endl;
+		}
+
+	cout << "simlinks: " << endl;
+	if (sim.size() == 0)
+		cout << "empty" << endl;
+	else
+		for (int i = 0; i < sim.size(); i++) 
+			cout << sim[i]->getname() << endl;
+
+	cout << "directories: " << endl;
+	if (dir.size() == 0)
+		cout << "empty" << endl;
+	else
+		for (int i = 0; i < dir.size(); i++) {
+			cout << dir[i]->getname() << endl;
+		}
 }
 
 void directory::deletedir(string name) { //удаление папки вместе с содержимым
-	for (int i = 0; i < mas.size(); i++) {
-		if (mas[i]->getint() == 1)
-			mas[i]->del();
-		if (mas[i]->getint() == 2)
-			mas[i]->del();
-		if (mas[i]->getint() == 3) {
-			directory* d = static_cast<directory*>(mas[i]);
-			if (d->mas.size() == 0)
-				del();
-			else
-				deletedir(mas[i]->name);
-		}
-			
-	}
+
+	for (int i = 0; i < fil.size(); i++) 
+		fil[i]->del();
+
+	for (int i = 0; i < sim.size(); i++)
+		sim[i]->del();
+
+	for (int i = 0; i < dir.size(); i++)
+		if (dir.size() == 0)
+			del();
+		else
+			deletedir(dir[i]->getname());
 }
 
 file directory::findfile(string name) {  //поиск файлов в папке рекурсией
-	for (int i = 0; i < mas.size(); i++) {
-		if (mas[i]->name == name)
-			if (mas[i]->getint() == 1) {
-			file* f = dynamic_cast<file*>(mas[i]);
-			return *f;
-		}
-			
-		if (mas[i]->getint() == 3) {
-			directory* d = static_cast<directory*>(mas[i]);
-			directory D = *d;
-			D->findfile(name);
+	int k;
+	for (int j = 0; j < dir.size(); j++) {
+		for (int i = 0; i < fil.size(); i++)
+			if (fil[i]->name == name) {
+				return *fil[i];
+				k = 1;
+			}
+		if (k != 1) {
+			dir[j]->findfile(name);
 		}
 	}
 }
 
 directory directory::copy() { //копия дерикторий 
 	directory d;
-	for (int i = 0; i < mas.size(); i++) {
-			d.add(*mas[i]);
+	for (int i = 0; i < dir.size(); i++) {
+		d.dir[i] = dir[i];
+	}
+	for (int i = 0; i < sim.size(); i++) {
+		d.sim[i] = sim[i];
+	}
+	for (int i = 0; i < fil.size(); i++) {
+		d.fil[i] = fil[i];
 	}
 }
