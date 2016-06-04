@@ -1,6 +1,4 @@
-п»ї#pragma once
-
-#include <vector>
+#pragma once
 
 #include "file.h"
 #include "simlink.h"
@@ -15,29 +13,54 @@ public:
 	vector <directory*> dir;
 	vector <simlink*> sim;
 
-	directory(string, string);
+	directory(string, vector<user*>);
 	~directory();
 	string getname() { return name; };
 	void del() { (*this).~directory(); }
-	void add(string user);
+	void add_file(user, file*);
+	void add_directory(user, directory*);
+	void add_simlink(user, simlink*);
 	void show();
 	void deletedir(string);
 	file* findfile(string);
 	directory copy(string user);
 };
 
-directory::directory(string user, string fname = "default") : parent(user, fname) {}
+directory::directory(string dname = "default", vector<user*> user) :
+	parent(dname, user) {}
 
-directory::~directory() { fil.clear(); dir.clear(); sim.clear(); cout << "dctor directory"; }
+directory::~directory() { fil.~vector(); dir.~vector(); sim.~vector(); cout << "dctor directory"; }
+
+void directory::add_file(user us, file* f)
+{
+	int k = 0;
+	while ((k < f->users.size()) && (us.name != f->users[k]->name))
+		k++;
+	if ((k != f->users.size()) || (us.get_adm == true))
+		fil.push_back(f);
+	else
+		throw "не имеете права";
+}
+
+void directory::add_simlink(user us, simlink* siml) 
+{
+	int k = 0;
+	while ((k < f->users.size()) && (us.name != f->users[k]->name))
+		k++;
+	if ((k != f->users.size()) || (us.get_adm == true))
+		fil.push_back(f);
+	else
+		throw 404;
+}
 
 void directory::add(string user) {
 	char command[10];
 	string name;
 	string dat;
 
-	cout << "РґРѕР±Р°РІРёС‚СЊ С„Р°Р№Р» - fil" << endl;
-	cout << "РґРѕР±Р°РІРёС‚СЊ СЃРёРјРІРѕР»РёС‡РµСЃРєСѓСЋ СЃСЃС‹Р»РєСѓ - sim" << endl;
-	cout << "РґРѕР±Р°РІРёС‚СЊ РїР°РїРєСѓ - dir" << endl;
+	cout << "добавить файл - fil" << endl;
+	cout << "добавить символическую ссылку - sim" << endl;
+	cout << "добавить папку - dir" << endl;
 
 	scanf("%s", &command);
 	switch (command[0]) {
@@ -56,7 +79,7 @@ void directory::add(string user) {
 	{
 		cout << "name of simlink: ";
 		cin >> name;
-		cout << "РІРІРµРґРёС‚Рµ РёРјСЏ С„Р°Р№Р»Р° РЅР° РєРѕС‚РѕСЂС‹Р№ С…РѕС‚РёС‚Рµ СѓРєР°Р·С‹РІР°С‚СЊ" << endl;
+		cout << "введите имя файла на который хотите указывать" << endl;
 		string fname;
 		cin >> fname;
 		file* f = findfile(fname);
@@ -94,7 +117,7 @@ void directory::show() {
 	else
 		for (int i = 0; i < sim.size(); i++) {
 			cout << sim[i]->getname() << endl;
-			cout << "С„Р°Р№Р», РЅР° РєРѕС‚РѕСЂС‹Р№ СѓРєР°Р·С‹РІР°РµС‚ СЃСЃС‹Р»РєР°" << endl;
+			cout << "файл, на который указывает ссылка" << endl;
 			cout << sim[i]->link->name << endl;
 		}
 
@@ -107,7 +130,7 @@ void directory::show() {
 		}
 }
 
-void directory::deletedir(string name) { //СѓРґР°Р»РµРЅРёРµ РґРёСЂРµРєС‚РѕСЂРёРё 
+void directory::deletedir(string name) { //удаление директории 
 
 	for (int i = 0; i < fil.size(); i++)
 		fil[i]->del();
@@ -122,18 +145,18 @@ void directory::deletedir(string name) { //СѓРґР°Р»РµРЅРёРµ РґРёСЂРµРєС‚РѕСЂРёРё
 			deletedir(dir[i]->getname());
 }
 
-file* directory::findfile(string name) {  //РїРѕРёСЃРє С„Р°Р№Р»Р° РІ РїР°РїРєРµ СЂРµРєСѓСЂСЃРёРµР№
-		for (int i = 0; i < fil.size(); i++)
-			if (fil[i]->name == name) {
-				return fil[i];
-			}
-		for (int i = 0; i < dir.size(); i++)
-			if (dir[i]->findfile(name))
-				return dir[i]->findfile(name);
-		return 0;
+file* directory::findfile(string name) {  //поиск файла в папке рекурсией
+	for (int i = 0; i < fil.size(); i++)
+		if (fil[i]->name == name) {
+			return fil[i];
+		}
+	for (int i = 0; i < dir.size(); i++)
+		if (dir[i]->findfile(name))
+			return dir[i]->findfile(name);
+	return 0;
 }
 
-directory directory::copy(string user) { //РєРѕРїРёСЏ РґРёСЂРµРєС‚РѕСЂРёР№
+directory directory::copy(string user) { //копия директорий
 	directory d(user);
 	for (int i = 0; i < dir.size(); i++) {
 		d.dir[i] = dir[i];
