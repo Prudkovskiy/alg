@@ -1,38 +1,61 @@
 #pragma once
 
 #include "parent.h"
+#include <vector>
 
 using namespace std;
 
 class file : public parent {
+private:
 	string data;
 public:
-	file(string, string, string);
+	file(string, vector<user*>, string);
 	~file();
-	void rename(string user, string);
+	void rename(user, string);
 	string getname();
-	void redact(string user, string);
-	string getdata();
+	void redact(user, string);
+	string getdata(user);
 	void del() { (*this).~file(); }
+	
 };
 
-file::file( string user, string fname = "default", string fdata = "default"):parent(user, fname) { data = fdata;}
+file::file(string fname = "default", vector<user*> users_, string fdata = "default") :
+	parent(fname, users_)
+{ data = fdata; }
+
 file::~file() { cout << "dctor file"; }
-void file::rename(string user, string fname) { 
-	if (users.count(user) && users[user].write) 
+
+void file::rename(user user, string fname)
+{
+	int k = 0;
+	while ((k < users.size()) && (user.name != users[k]->name))
+		k++;
+	if ((k != users.size()) || (user.get_adm == true))
 		name = fname;
 	else
-	{
-		cout << "у вас нет прав" << endl;
-	}
+		throw 404;
 }
+
 string file::getname() { return name; }
-void file::redact(string user, string fdata) {
-	if (users.count(user) && users[user].write)
+
+void file::redact(user user, string fdata)
+{
+	int k = 0;
+	while ((k < users.size()) && (user.name != users[k]->name))
+		k++;
+	if ((k != users.size()) || (user.get_adm == true))
 		data = fdata;
 	else
-	{
-		cout << "у вас нет прав" << endl;
-	}
+		throw 404;
 }
-string file::getdata() { return data; }
+
+string file::getdata(user user) 
+{ 
+	int k = 0;
+	while ((k < users.size()) && (user.name != users[k]->name))
+		k++;
+	if ((k != users.size()) || (user.get_adm == true))
+		return data;
+	else
+		throw 404;
+}

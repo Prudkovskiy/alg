@@ -1,28 +1,28 @@
 #pragma once
 
-#include <string>
-#include <iostream>
+#include <vector>
 #include "user.h"
-#include <map>
 
 using namespace std;
 
 class parent {
 public:
-	map <string, Prava> users;
+	vector <user*> users;
 	string name;
-	parent(string ,string);
+	parent(string, vector<user*>);
 	virtual ~parent();
 	void del() { (*this).~parent(); }
-	void dostup();
 };
 
-parent::parent(string username, string fname = "default") { 
-	name = fname; 
-	users[username] = { true, true };
-	users["admin"] = { true, true };
+parent::parent(string fname = "default", vector<user*> users_) 
+{
+	name = fname;
+	for (int i = 0; i < users_.size(); i++)
+		users.push_back(users_[i]);
 }
-parent::~parent() { cout << "dctor"; }
-void parent::dostup() {
 
+parent::~parent() 
+{ 
+	users.~vector;
+	cout << "dctor"; 
 }
