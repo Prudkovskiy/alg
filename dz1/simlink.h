@@ -5,19 +5,20 @@
 using namespace std;
 
 class simlink : public parent {
-public:
+private:
 	parent* link;
-	simlink(string, vector<user*>, parent*);
+public:
+	simlink(string, string, vector<user*>, directory*, parent*);
 	~simlink();
 	void rename(user, string);
-	string getname();
 	int getint() { return 2; }
-	void del() { (*this).~simlink(); }
 };
 
-simlink::simlink(string sname = "default", vector<user*> user, parent* plink) :
-	parent(sname, user)
-{ link = plink; }
+simlink::simlink(string sname = "default", string adr = "default", vector<user*> users_, directory* dir = NULL, parent* plink) :
+	parent(sname, adr, users_, dir)
+{
+	link = plink;
+}
 
 simlink::~simlink() { cout << "dctor simlink"; }
 
@@ -31,5 +32,3 @@ void simlink::rename(user user, string sname)
 	else
 		throw 404;
 }
-
-string simlink::getname() { return name; }

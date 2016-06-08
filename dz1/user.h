@@ -6,7 +6,7 @@
 using namespace std;
 class user
 {
-private:
+protected:
 	bool admin;
 public:
 	string name;

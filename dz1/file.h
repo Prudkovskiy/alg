@@ -1,7 +1,6 @@
 #pragma once
 
 #include "parent.h"
-#include <vector>
 
 using namespace std;
 
@@ -9,34 +8,31 @@ class file : public parent {
 private:
 	string data;
 public:
-	file(string, vector<user*>, string);
+	file(string, string, vector<user*>, directory*, string);
 	~file();
 	void rename(user, string);
-	string getname();
 	void redact(user, string);
 	string getdata(user);
-	void del() { (*this).~file(); }
-	
 };
 
-file::file(string fname = "default", vector<user*> users_, string fdata = "default") :
-	parent(fname, users_)
-{ data = fdata; }
+file::file(string fname = "default", string adr = "default", vector<user*> users_, directory* dir = NULL, string fdata = "default") :
+	parent(fname, adr, users_, dir)
+{
+	data = fdata; 	
+}
 
 file::~file() { cout << "dctor file"; }
 
-void file::rename(user user, string fname)
+void file::rename(user us, string fname)
 {
 	int k = 0;
-	while ((k < users.size()) && (user.name != users[k]->name))
+	while ((k < users.size()) && (us.name != users[k]->name))
 		k++;
-	if ((k != users.size()) || (user.get_adm == true))
+	if ((k != users.size()) || (us.get_adm == true))
 		name = fname;
 	else
 		throw 404;
 }
-
-string file::getname() { return name; }
 
 void file::redact(user user, string fdata)
 {
