@@ -27,7 +27,7 @@ public:
 	void delete_sim(string);
 
 	file* findfile(string);
-	directory operator=(directory);//перегрузка
+	directory& operator=(directory&);//перегрузка
 
 	directory(const directory&);
 };
@@ -38,11 +38,11 @@ directory::directory(string dname = "default", string adr = "default", vector<us
 }
 
 directory::~directory() {
-	sim.~vector();
-	fil.~vector();
+	sim.clear();
+	fil.clear();
 	for (int i = 0; i < dir.size(); i++)
 		if (dir.size() == 0) {
-			dir.~vector;
+			dir.clear();
 		}	
 		else {
 			dir[i]->~directory;
@@ -241,7 +241,7 @@ directory::directory(const directory& previous_directory) : parent((parent&)prev
 		fil[i] = previous_directory.fil[i];
 }
 
-directory directory::operator=(directory d)
+directory& directory::operator=(directory& d)
 {
 	name = d.name;
 	address = d.address;

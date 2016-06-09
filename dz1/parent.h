@@ -20,7 +20,7 @@ public:
 	//void del() { (*this).~parent(); }
 };
 
-parent::parent(string nam = "default", string adr = "default", vector<user*> users_, directory* dir) 
+parent::parent(string nam = "default", string adr = "default", vector<user*> users_, directory* dir = NULL) 
 {
 	*parent_dir = *dir;
 	name = nam;
@@ -31,7 +31,7 @@ parent::parent(string nam = "default", string adr = "default", vector<user*> use
 
 parent::~parent() 
 { 
-	users.~vector;
+	users.clear();
 	cout << "dctor"; 
 }
 
