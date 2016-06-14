@@ -17,10 +17,10 @@ public:
 	user& operator=(user&);//перегрузка
 };
 
-user::user(string name)
+user::user(string uname)
 {
-	this->admin = false;
-	this->name = name;
+	admin = false;
+	name = uname;
 }
 
 user::~user(void)
@@ -30,17 +30,17 @@ user::~user(void)
 
 void user::set_rignts()
 {
-	this->admin = true;
+	admin = true;
 }
 
 bool user::get_adm()
 {
-	return this->admin;
+	return admin;
 }
 
 user& user::operator=(user& us)//перегрузка равенства 
 {
 	name = us.name;
-	this->admin = us.admin;
+	admin = us.admin;
 	return *this;//возвращаем ссылку на текущий объект
 }

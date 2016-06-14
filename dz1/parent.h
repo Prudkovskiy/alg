@@ -1,54 +1,40 @@
 #pragma once
 
-#include <vector>
+#include "address.h"
 #include "user.h"
-#include "directory.h"
 
 using namespace std;
 
 class parent {
 public:
-	vector <user*> users;
+	vector<user*> users;
 	string name;
-	string address;
-	directory* parent_dir;
-	parent(string, string, vector<user*>, directory*);
+	address* adr;
+	parent(string, address*, vector<user*>);
 	virtual ~parent();
 	parent(parent& previous_parent);
-	parent* operator=(parent*);//перегрузка
-
-	//void del() { (*this).~parent(); }
+	void del() { this->~parent(); }
 };
 
-parent::parent(string nam = "default", string adr = "default", vector<user*> users_, directory* dir = NULL) 
+parent::parent(string nam = "default", address* address = NULL, vector<user*> users_ = vector<user*>())
 {
-	*parent_dir = *dir;
 	name = nam;
-	address = adr;
+	adr = address;
 	for (int i = 0; i < users_.size(); i++)
 		users.push_back(users_[i]);
 }
 
 parent::~parent() 
 { 
-	users.clear();
-	cout << "dctor"; 
+	for (int i = 0; i < users.size(); i++)
+		delete users[i];
+	cout << " dctor parent " << endl; 
 }
 
 parent::parent(parent& previous_parent)
 {
 	name = previous_parent.name;
-	address = previous_parent.address;
+	adr = previous_parent.adr;
 	for (int i = 0; i < users.size(); i++)
 		users[i] = previous_parent.users[i];
-}
-
-parent* parent::operator=(parent* p)//перегрузка равенства 
-{
-	name = p->name;
-	address = p->address;
-	for (int i = 0; i < users.size(); i++)
-		users[i] = p->users[i];
-	
-	return this;
 }

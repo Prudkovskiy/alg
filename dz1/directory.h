@@ -13,81 +13,61 @@ public:
 	vector <directory*> dir;
 	vector <simlink*> sim;
 
-	directory(string, string, vector<user*>, directory*);
+	directory(string, address*, vector<user*>);
 	~directory();
 
-	void add_file(user, file*);
-	void add_directory(user, directory*);
-	void add_simlink(user, simlink*);
-	
+	void add_file(file*);
+	void add_directory(directory*);
+	void add_simlink(simlink*);
+	void add_user(user*);
+
 	void show();
-	
-	void delete_fil(string);
-	void delete_dir(string);
-	void delete_sim(string);
+	void show_All(int);
+
+	void delete_fil(user*, string);
+	void delete_dir(user*, string);
+	void delete_sim(user*, string);
+
+	directory* get_in(user*, string);
+	directory* get_out();
+	directory* get_on_start();
 
 	file* findfile(string);
-	directory& operator=(directory&);//перегрузка
 
 	directory(const directory&);
+	void del() { this->~directory(); }
+	string show_address();
 };
 
-directory::directory(string dname = "default", string adr = "default", vector<user*> user, directory* dir = NULL) :
-	parent(dname, adr, user, dir) 
+directory::directory(string dname = "default", address* adr = NULL, vector<user*> users_ = vector<user*>()) :
+	parent(dname, adr, users_) 
 {
 }
 
 directory::~directory() {
-	sim.clear();
-	fil.clear();
 	for (int i = 0; i < dir.size(); i++)
-		if (dir.size() == 0) {
-			dir.clear();
-		}	
-		else {
-			dir[i]->~directory;
-			dir.erase(dir.begin() + i);
-		}
-	cout << "dctor directory";
+		delete dir[i];
+	for (int i = 0; i < fil.size(); i++)
+		delete fil[i];
+	for (int i = 0; i < sim.size(); i++)
+		delete sim[i];
+	cout << " dctor directory ";
 }
 
-void directory::add_file(user us, file* f)
+void directory::add_file(file* f)
 {
-	int k = 0;
-	while ((k < f->users.size()) && (us.name != f->users[k]->name))
-		k++;
-	if ((k != f->users.size()) || (us.get_adm == true))
 		fil.push_back(f);
-	else
-		throw "that user can't create new file";
 }
 
-void directory::add_simlink(user us, simlink* siml) 
+void directory::add_simlink(simlink* siml) 
 {
-	int k = 0;
-	while ((k < siml->users.size()) && (us.name != siml->users[k]->name))
-		k++;
-	if ((k != siml->users.size()) || (us.get_adm == true)) 
-	{
 		sim.push_back(siml);
-	}	
-	else
-		throw "that user can't create new simlink";
 }
 
-void directory::add_directory(user us, directory* d)
+void directory::add_directory(directory* d)
 {
-	int k = 0;
-	while ((k < d->users.size()) && (us.name != d->users[k]->name))
-		k++;
-	if ((k != d->users.size()) || (us.get_adm == true))
-	{
 		dir.push_back(d);
-	}
-	else
-		throw "that user can't create new directory";
 }
-
 
 /*
 void directory::add(string user) {
@@ -141,98 +121,175 @@ void directory::add(string user) {
 */
 
 void directory::show() {
-	cout << "files: " << endl;
-	if (fil.size() == 0)
-		cout << "EMPTY" << endl;
-	else
+	cout << this->show_address() << endl;
 		for (int i = 0; i < fil.size(); i++) {
-			cout << fil[i]->name << endl;
+			cout << fil[i]->name << ".fil" << endl;
 		}
 
-	cout << "simlinks: " << endl;
-	if (sim.size() == 0)
-		cout << "EMPTY" << endl;
-	else
 		for (int i = 0; i < sim.size(); i++) {
-			cout << sim[i]->name << endl;
-			cout << "файл, на который указывает ссылка" << endl;
-			cout << sim[i]->link->name << endl;
+			directory* d = sim[i]->link->adr->way[sim[i]->link->adr->way.size() - 1];
+			string adr = d->show_address() + d->name + "/";
+			cout << sim[i]->name << ".sim" << "  pointed on  " << adr << sim[i]->link->name << ".fil" << endl;
 		}
 
-	cout << "directories: " << endl;
-	if (dir.size() == 0)
-		cout << "EMPTY" << endl;
-	else
 		for (int i = 0; i < dir.size(); i++) {
-			cout << dir[i]->name << endl;
+			cout << dir[i]->name << ".dir" << endl;
 		}
 }
 
-void directory::delete_fil(string fname) {
-	int k = 1;
-	for (int i = 0; i < fil.size(); i++)
-		if (fil[i]->name == fname) {
-			fil[i]->~file;
-			fil.erase(fil.begin() + i);
-		}
-		else k++;
-
-	if (k == fil.size())
-		throw "this file can't be found";
-}
-
-void directory::delete_sim(string sname) {
-	int k = 1;
-	for (int i = 0; i < sim.size(); i++)
-		if (sim[i]->name == sname) {
-			sim[i]->~simlink;
-			sim.erase(sim.begin() + i);
-		}
-		else k++;
-
-	if (k == sim.size())
-		throw "this simlink can't be found";
-}
-
-void directory::delete_dir(string dname) {
-	int k = 1;
-	for (int i = 0; i < dir.size(); i++)
-		if (dir[i]->name == dname) {
-			dir[i]->~directory;
-			dir.erase(dir.begin() + i);
-		}
-		else k++;
-
-	if (k == dir.size())
-		throw "this directory can't be found";
-}
-
-file* directory::findfile(string name) {  //поиск файла в папке рекурсией
-	int k = 1;
+void directory::show_All(int step) {
 	for (int i = 0; i < fil.size(); i++) {
-		if (fil[i]->name == name)
-			return fil[i];
-		else k++;
+		for (int k = 0; k < step; k++)
+			cout << "  ";
+		cout << fil[i]->name << ".fil" << endl;
 	}
 
-	int l = 1;
-	if (k == fil.size)
+	for (int i = 0; i < sim.size(); i++) {
+		directory* d = sim[i]->link->adr->way[sim[i]->link->adr->way.size() - 1];
+		string adr = d->show_address() + d->name + "/";
+		for (int k = 0; k < step; k++)
+			cout << "  ";
+		cout << sim[i]->name << ".sim" << "  pointed on  " << adr << sim[i]->link->name << ".fil" << endl;
+	}
+
+	for (int i = 0; i < dir.size(); i++) {
+		for (int k = 0; k < step; k++)
+			cout << "  ";
+		cout << dir[i]->name << ".dir" << endl;
+		dir[i]->show_All(step + 1);
+	}
+}
+
+void directory::delete_fil(user* us, string fname) {
+	int m = 0;
+	for (int i = 0; i < fil.size(); i++)
+		if (fil[i]->name == fname)
+		{
+			int k = 0;
+			for (int l = 0; l < fil[i]->users.size(); l++)
+				if (us->name != fil[i]->users[l]->name)
+					k++;
+			if ((k != fil[i]->users.size()) || (us->get_adm() == true))
+			{
+				fil[i]->del();
+				fil.erase(fil.begin() + i);
+			}
+			else
+				throw "that user can't delete that file";
+		}
+		else m++;
+
+		if (m == sim.size())
+			throw "that file can't be found";
+}
+
+void directory::delete_sim(user* us, string sname) {
+	int m = 0;
+	for (int i = 0; i < sim.size(); i++)
+		if (sim[i]->name == sname)
+		{
+			int k = 0;
+			for (int l = 0; l < sim[i]->users.size(); l++)
+				if (us->name != sim[i]->users[l]->name)
+					k++;
+			if ((k != sim[i]->users.size()) || (us->get_adm() == true))
+			{
+				sim[i]->del();
+				sim.erase(sim.begin() + i);
+			}
+			else
+				throw "that user can't delete that simlink";
+		}
+		else m++;
+
+		if (m == sim.size())
+			throw "that simlink can't be found";
+}
+
+void directory::delete_dir(user* us, string dname) {
+	int m = 0;
+	for (int i = 0; i < dir.size(); i++)
+		if (dir[i]->name == dname)
+		{
+			int k = 0;
+			for (int l = 0; l < dir[i]->users.size(); l++)
+				if (us->name != dir[i]->users[l]->name)
+					k++;
+			if ((k != dir[i]->users.size()) || (us->get_adm() == true))
+			{
+				dir[i]->del();
+				dir.erase(dir.begin() + i);
+			}
+			else
+				throw "that user can't delete that directory";
+		}
+		else m++;
+
+		if (m == dir.size())
+			throw "that directory can't be found";
+}
+
+void directory::add_user(user* us) {
+	users.push_back(us);
+}
+
+directory* directory::get_in(user* us, string dname) {
+	int l = 0;
+	for (int i = 0; i < dir.size(); i++)
+		if (dir[i]->name == dname) {
+			int k = 0;
+			while ((k < dir[i]->users.size()) && (us->name != dir[i]->users[k]->name))
+				k++;
+			if ((k != dir[i]->users.size()) || (us->get_adm() == true))
+			{
+				return dir[i];
+			}
+			else
+				throw "that user can't open that directory";
+		}
+		else l++;
+
+		if (l == dir.size())
+			throw "that directory can't be found";
+}
+
+directory* directory::get_out() {
+	if (this->adr->way.size() >= 2)
+		return this->adr->way[this->adr->way.size()-2];
+	else {
+		throw "you can't move out of that directory! It's start directory!";
+		return this;
+	}
+}
+
+directory* directory::get_on_start() {
+	return this->adr->way[0];
+}
+
+file* directory::findfile(string name) {  //recursion find_file
+	int k = 0;
+	for (int i = 0; i < fil.size(); i++)
+		if (fil[i]->name == name) {
+			address* a = this->adr;
+			a->way.push_back(this);
+			fil[i]->adr = a;
+			return fil[i];
+		}
+		else k++; 
+
+	int l = 0;
+	if (k == fil.size()) {
 		for (int i = 0; i < dir.size(); i++)
 			if (dir[i]->findfile(name))
 				return dir[i]->findfile(name);
 			else l++;
-	
-			if (l == dir.size)
-				throw "this file can't be found in that directory";
+	}
+		if (l == dir.size())
+			throw "this file can't be found in that directory";
 }
 
 directory::directory(const directory& previous_directory) : parent((parent&)previous_directory)
 {
-	name = previous_directory.name;
-	address = previous_directory.address;
-
-	for (int i = 0; i < users.size(); i++)
-		users[i] = previous_directory.users[i];
 	for (int i = 0; i < dir.size(); i++) 
 		dir[i] = previous_directory.dir[i];
 	for (int i = 0; i < sim.size(); i++) 
@@ -241,7 +298,14 @@ directory::directory(const directory& previous_directory) : parent((parent&)prev
 		fil[i] = previous_directory.fil[i];
 }
 
-directory& directory::operator=(directory& d)
+string directory::show_address() {
+	string a;
+	for (int i = 0; i < adr->way.size(); i++)
+		a = a + adr->way[i]->name + "/";
+	return a;
+}
+
+/*directory& directory::operator=(directory& d)
 {
 	name = d.name;
 	address = d.address;
@@ -255,4 +319,4 @@ directory& directory::operator=(directory& d)
 		fil[i] = d.fil[i];
 
 	return *this;
-}
+}*/
